@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, LayoutDashboard, FileText, Settings, Database, Users } from "lucide-react";
+import { Activity, LayoutDashboard, FileText, Settings, Database, Users, LogIn, LogOut } from "lucide-react";
 import clsx from "clsx";
+
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", Icon: LayoutDashboard },
@@ -15,6 +17,7 @@ const links = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user, isAdmin, logout } = useAuth();
 
   return (
     <aside className="w-64 border-r border-foreground/10 bg-background/50 backdrop-blur-md hidden lg:flex flex-col h-screen fixed left-0 top-0 z-50 transition-colors duration-300">
@@ -46,16 +49,35 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="p-6 border-t border-foreground/10">
+      <div className="p-6 border-t border-foreground/10 space-y-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center border border-accent/50 text-accent font-display text-xs">
-            TC
+            {user?.email?.[0]?.toUpperCase() ?? "A"}
           </div>
           <div className="text-xs uppercase font-display tracking-widest leading-tight">
-            Admin <br/>
-            <span className="text-foreground/50">Level 5</span>
+            {user?.email ? user.email.split("@")[0] : "Guest"} <br />
+            <span className="text-foreground/50">{isAdmin ? "Admin Access" : user ? "Signed In" : "Not Signed In"}</span>
           </div>
         </div>
+
+        {user ? (
+          <button
+            type="button"
+            onClick={() => void logout()}
+            className="w-full inline-flex items-center justify-center gap-2 border border-foreground/10 py-3 text-xs uppercase tracking-[0.24em] font-display hover:bg-foreground/5 transition-colors"
+          >
+            <LogOut className="w-4 h-4 text-accent" />
+            Sign Out
+          </button>
+        ) : (
+          <Link
+            href="/auth"
+            className="w-full inline-flex items-center justify-center gap-2 border border-foreground/10 py-3 text-xs uppercase tracking-[0.24em] font-display hover:bg-foreground/5 transition-colors"
+          >
+            <LogIn className="w-4 h-4 text-accent" />
+            Admin Login
+          </Link>
+        )}
       </div>
     </aside>
   );

@@ -5,10 +5,10 @@ import Link from "next/link";
 import { ArrowRight, Activity, Cloud, Shield, Database } from "lucide-react";
 
 const features = [
-  { icon: Cloud, title: "Cloud Analytics Engine", desc: "Real-time Processing" },
-  { icon: Database, title: "Multi-Source Ingestion", desc: "Steps, HR, Sleep, Calories" },
-  { icon: Activity, title: "Anomaly Detection", desc: "AI-Powered Alerts" },
-  { icon: Shield, title: "Secure & Compliant", desc: "Enterprise Data Protection" },
+  { icon: Cloud, title: "Dataset Analytics Engine", desc: "Patient cohort processing" },
+  { icon: Database, title: "Smartwatch Ingestion", desc: "Steps, HR, Sleep, Oxygen, Stress" },
+  { icon: Activity, title: "Risk Detection", desc: "Threshold-based health alerts" },
+  { icon: Shield, title: "Single Source of Truth", desc: "One cleaned CSV across all views" },
 ];
 
 export default function LandingPage() {
@@ -35,12 +35,12 @@ export default function LandingPage() {
           </motion.div>
           
           <h1 className="text-6xl md:text-8xl font-display font-bold tracking-tighter uppercase leading-[0.9]">
-            Cloud-Powered <br className="hidden md:block"/>
+            Smartwatch <br className="hidden md:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/50">Health Intelligence</span>
           </h1>
           
           <p className="text-xl md:text-2xl text-foreground/60 max-w-2xl mx-auto font-light">
-            Advanced multi-source data aggregation. Predictive analytics. Population-scale insights.
+            Feed in a cleaned smartwatch dataset and explore patient risk, cohort behavior, sleep, oxygen, and activity insights.
           </p>
         </div>
 

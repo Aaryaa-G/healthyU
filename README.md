@@ -1,36 +1,150 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a smartwatch health monitoring dashboard built with [Next.js](https://nextjs.org).
 
 ## Getting Started
 
-First, run the development server:
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Dataset Source
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The dashboard reads smartwatch patient data from:
 
-## Learn More
+`public/data/smartwatch-health-cleaned.csv`
 
-To learn more about Next.js, take a look at the following resources:
+The current file was copied from:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`c:\Users\admin\Downloads\Stop_Watch_Health_Dataset_Cleaned.csv`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+If you want to refresh the app with a new cleaned dataset, replace the CSV in `public/data/` and keep these headers unchanged:
 
-## Deploy on Vercel
+- `User ID`
+- `Heart Rate (BPM)`
+- `Blood Oxygen Level (%)`
+- `Step Count`
+- `Sleep Duration (hours)`
+- `Activity Level`
+- `Stress Level`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Firebase Connection
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project now supports both:
+
+- Firebase-backed cloud data using Firestore and Cloud Storage
+- Firebase deployment configuration for Next.js App Hosting
+- Firebase Authentication for admin-only sync and export actions
+
+### Environment Setup
+
+Copy `.env.example` to `.env.local` and fill in your Firebase values.
+
+Important server values:
+
+- `HEALTH_DATA_SOURCE=local` or `firebase`
+- `FIREBASE_PROJECT_ID`
+- `FIREBASE_CLIENT_EMAIL`
+- `FIREBASE_PRIVATE_KEY`
+- `FIREBASE_STORAGE_BUCKET`
+- `FIREBASE_ADMIN_EMAILS=your-email@somaiya.edu`
+
+Important client values:
+
+- `NEXT_PUBLIC_FIREBASE_API_KEY`
+- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+- `NEXT_PUBLIC_FIREBASE_APP_ID`
+
+### Enable Firebase Authentication
+
+In the Firebase console for project `healthyu-68691`:
+
+1. Open `Build` -> `Authentication`
+2. Click `Get started`
+3. Open the `Sign-in method` tab
+4. Enable `Google`
+5. Set the project support email
+6. Save
+7. Optionally also enable `Email/Password` if you want password login in addition to Google sign-in
+8. Add your admin email to `.env.local` in `FIREBASE_ADMIN_EMAILS`
+
+The app only allows allowlisted admin emails to run:
+
+- Firebase dataset sync
+- CSV/PDF exports
+
+### Add A Web App In Firebase
+
+1. Open `Project settings`
+2. In `General`, scroll to `Your apps`
+3. Click the Web icon `</>`
+4. Register the web app
+5. Copy the Firebase config values into `.env.local`
+
+### Create The Service Account Key
+
+1. Open `Project settings`
+2. Open `Service accounts`
+3. Click `Generate new private key`
+4. Download the JSON file
+5. Copy these values into `.env.local`:
+   - `project_id` -> `FIREBASE_PROJECT_ID`
+   - `client_email` -> `FIREBASE_CLIENT_EMAIL`
+   - `private_key` -> `FIREBASE_PRIVATE_KEY`
+
+### Sync The Local CSV To Firebase
+
+After your Firebase env values are set and you are signed in with an allowlisted admin account, use the Reports page button:
+
+- `Sync Local CSV To Firebase`
+
+Or call the route manually with a Firebase ID token in the `Authorization` header.
+
+That route will:
+
+- upload patient rows into the Firestore collection in `FIREBASE_HEALTH_COLLECTION`
+- upload the raw CSV into Cloud Storage
+- save sync metadata in `FIREBASE_HEALTH_METADATA_DOC`
+
+Then switch the app to Firebase by setting:
+
+```bash
+HEALTH_DATA_SOURCE=firebase
+```
+
+### Firebase Files In This Repo
+
+- `src/lib/firebase/admin.ts`
+- `src/lib/firebase/client.ts`
+- `src/lib/firebase/auth-server.ts`
+- `src/app/api/auth/session/route.ts`
+- `src/app/api/firebase/sync/route.ts`
+- `firebase.json`
+- `firestore.rules`
+- `storage.rules`
+- `apphosting.yaml`
+
+### Hosting Note
+
+Firestore and Cloud Storage both have free-tier usage limits. However, according to Firebase's official App Hosting docs, full Next.js server hosting on Firebase App Hosting may require the Blaze plan rather than the Spark free tier. The app is wired for Firebase hosting, but you should expect that deployment model to potentially need billing enabled.
+
+## What The App Shows
+
+- Dashboard cards with real averages for heart rate, blood oxygen, steps, and sleep
+- High-risk patient trend chart based on a dataset-derived risk score
+- Cohort alerts for low oxygen, high heart rate, short sleep, and high stress
+- Population analytics grouped by smartwatch activity level
+- Report summaries generated directly from the CSV
+- Filtered report exports as CSV or branded PDF
+- One-click raw patient dataset export as CSV
+
+## Notes
+
+- The supplied CSV does not include timestamps, so the app focuses on cohort and patient trend analysis instead of real-time time-series charts.
+- Date filters automatically enable if a future cleaned dataset includes a `Date`, `Timestamp`, or `Recorded At` column.
+- Dataset parsing and aggregation live in `src/lib/health-data.ts`.

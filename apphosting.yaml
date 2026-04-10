@@ -1,0 +1,11 @@
+runConfig:
+  minInstances: 0
+  maxInstances: 1
+  cpu: 1
+  memoryMiB: 512
+env:
+  - variable: HEALTH_DATA_SOURCE
+    value: firebase
+    availability:
+      - BUILD
+      - RUNTIME
